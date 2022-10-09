@@ -30,7 +30,7 @@ resource "aws_subnet" "public" {
 ################################################################################
 
 resource "aws_subnet" "database" {
-  count =  length(var.database_subnets) > 0 ? length(var.database_subnets) : 0
+  count = length(var.database_subnets) > 0 ? length(var.database_subnets) : 0
 
   vpc_id                          = aws_vpc.this.id
   cidr_block                      = var.database_subnets[count.index]
