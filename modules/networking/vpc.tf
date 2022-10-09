@@ -18,7 +18,7 @@ resource "aws_vpc" "this" {
   tags = merge(
     { "Name" = var.name },
     var.tags,
-    var.vpc_tags,
+
   )
 }
 
@@ -33,8 +33,8 @@ resource "aws_internet_gateway" "this" {
 
   tags = merge(
     { "Name" = var.name },
-    var.tags,
-    var.igw_tags,
+    var.tags
+
   )
   lifecycle {
     create_before_destroy = true
@@ -58,7 +58,7 @@ resource "aws_eip" "nat" {
       )
     },
     var.tags,
-    var.nat_eip_tags,
+
   )
 }
 

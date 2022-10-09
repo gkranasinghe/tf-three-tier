@@ -20,8 +20,7 @@ resource "aws_subnet" "public" {
         element(var.azs, count.index),
       )
     },
-    var.tags,
-    var.public_subnet_tags
+    var.tags
   )
 }
 
@@ -48,8 +47,7 @@ resource "aws_subnet" "database" {
         element(var.azs, count.index),
       )
     },
-    var.tags,
-    var.database_subnet_tags
+    var.tags
   )
 }
 
