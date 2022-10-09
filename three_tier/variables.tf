@@ -1,15 +1,15 @@
-variable instance_type{
-  type = string
-}
-variable instance_count{
-  type = number
-}
+
 variable aws_region{
   type = string
 }
 variable aws_account_id{
   type = string
 }
+
+#########################################################
+#  variables relating to networkign 
+#########################################################
+
 variable "access_ip" {
   type    = string
 }
@@ -127,3 +127,11 @@ variable "nat_eip_tags" {
   type        = map(string)
   default     = {}
 }
+
+#########################################################
+#  variables relating to compute module 
+#########################################################
+variable "key_name" {}
+variable "bastion_instance_count" {}
+# variable "instance_type" {}
+variable instance_type{}
