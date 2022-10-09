@@ -44,10 +44,12 @@ resource "aws_internet_gateway" "this" {
 ################################################################################
 # NAT Gateway
 ################################################################################
-
+locals {
+  nat_gateway_ips = try(aws_eip.nat[*].id, [])
+}
 resource "aws_eip" "nat" {
-  count = local.nat_gateway_count 
-  vpc = true
+  count = local.nat_gateway_count
+  vpc   = true
   tags = merge(
     {
       "Name" = format(
@@ -62,6 +64,10 @@ resource "aws_eip" "nat" {
 
 resource "aws_nat_gateway" "this" {
   count = var.enable_nat_gateway ? local.nat_gateway_count : 0
+  allocation_id = element(
+    local.nat_gateway_ips,
+    var.single_nat_gateway ? 0 : count.index,
+  )
   subnet_id = element(
     aws_subnet.public[*].id,
     var.single_nat_gateway ? 0 : count.index,
@@ -75,7 +81,6 @@ resource "aws_nat_gateway" "this" {
       )
     },
     var.tags,
-    var.nat_gateway_tags,
   )
 
   depends_on = [aws_internet_gateway.this]

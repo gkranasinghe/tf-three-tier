@@ -9,7 +9,6 @@ resource "aws_subnet" "public" {
   cidr_block                      = element(concat(var.public_subnets, [""]), count.index)
   availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
   availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
-  map_public_ip_on_launch         = var.map_public_ip_on_launch
   # assign_ipv6_address_on_creation = var.public_subnet_assign_ipv6_address_on_creation == null ? var.assign_ipv6_address_on_creation : var.public_subnet_assign_ipv6_address_on_creation
 
   # ipv6_cidr_block = var.enable_ipv6 && length(var.public_subnet_ipv6_prefixes) > 0 ? cidrsubnet(aws_vpc.this[0].ipv6_cidr_block, 8, var.public_subnet_ipv6_prefixes[count.index]) : null
@@ -17,12 +16,12 @@ resource "aws_subnet" "public" {
   tags = merge(
     {
       "Name" = format(
-        "${var.name}-${var.public_subnet_suffix}-%s",
+        "${var.name}-%s",
         element(var.azs, count.index),
       )
     },
     var.tags,
-    var.public_subnet_tags,
+    var.public_subnet_tags
   )
 }
 
@@ -50,7 +49,7 @@ resource "aws_subnet" "database" {
       )
     },
     var.tags,
-    var.database_subnet_tags,
+    var.database_subnet_tags
   )
 }
 
@@ -65,8 +64,8 @@ resource "aws_db_subnet_group" "database" {
     {
       "Name" = lower(coalesce(var.database_subnet_group_name, var.name))
     },
-    var.tags,
-    var.database_subnet_group_tags,
+    var.tags
+
   )
 }
 
@@ -92,8 +91,8 @@ resource "aws_subnet" "private" {
         element(var.azs, count.index),
       )
     },
-    var.tags,
-    var.private_subnet_tags,
+    var.tags
+
   )
 }
 
@@ -108,9 +107,8 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(
-    { "Name" = "${var.name}-${var.public_subnet_suffix}" },
-    var.tags,
-    var.public_route_table_tags,
+    { "Name" = "${var.name}" },
+    var.tags
   )
 }
 
@@ -143,8 +141,8 @@ resource "aws_route_table" "private" {
         element(var.azs, count.index),
       )
     },
-    var.tags,
-    var.private_route_table_tags,
+    var.tags
+
   )
 }
 
@@ -159,7 +157,26 @@ resource "aws_route" "private_nat_gateway" {
     create = "5m"
   }
 }
+################################################################################
+# Database routes
+################################################################################
 
+resource "aws_route_table" "database" {
+  count = var.create_database_subnet_route_table && length(var.database_subnets) > 0 ? var.single_nat_gateway ? 1 : length(var.database_subnets) : 0
+
+ vpc_id = aws_vpc.this.id
+
+  tags = merge(
+    {
+      "Name" = var.single_nat_gateway ? "${var.name}" : format(
+        "${var.name}-%s",
+        element(var.azs, count.index),
+      )
+    },
+    var.tags,
+
+  )
+}
 ################################################################################
 # Route table association
 ################################################################################
@@ -182,11 +199,11 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table_association" "database" {
-  count =  length(var.database_subnets) > 0 ? length(var.database_subnets) : 0
+  count = length(var.database_subnets) > 0 ? length(var.database_subnets) : 0
 
   subnet_id = element(aws_subnet.database[*].id, count.index)
   route_table_id = element(
     coalescelist(aws_route_table.database[*].id, aws_route_table.private[*].id),
-    var.create_database_subnet_route_table ? var.single_nat_gateway || var.create_database_internet_gateway_route ? 0 : count.index : count.index,
+    var.create_database_subnet_route_table ? var.single_nat_gateway  ? 0 : count.index : count.index,
   )
 }
