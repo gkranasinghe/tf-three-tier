@@ -1,6 +1,6 @@
 
-variable aws_region{}
-variable aws_account_id{}
+variable "aws_region" {}
+variable "aws_account_id" {}
 
 #########################################################
 #  variables relating to networkign 
@@ -22,3 +22,13 @@ variable "access_ip" {}
 variable "key_name" {}
 variable "bastion_instance_count" {}
 variable "instance_type" {}
+
+#########################################################
+#  variables relating to database module 
+#########################################################
+
+
+
+
+variable "dbuser" {}
+variable "dbpassword" {}

@@ -16,6 +16,7 @@ endif
 TERRAFORM:= $(shell command -v terraform 2> /dev/null)
 TERRAFORM_VERSION:= "1.2.6"
 
+## to be used with terrafrom v1.2.6  version 
 ifeq ($(OS_X),true)
 		TERRAFORM_MD5:= $(shell md5 -q `which terraform`)
 		TERRAFORM_REQUIRED_MD5:= 
@@ -46,7 +47,7 @@ plan: check
 	@terraform workspace select $(value ENV)
 
 	@terraform plan  \
-  	  -var-file="env_vars/$(value ENV).tfvars" \
+  	  -var-file="environment/$(value ENV).tfvars" \
 		-out $(value ENV).plan
 
 
@@ -72,7 +73,7 @@ destroy: check
 	@echo "## 💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥💥 ##"
 	@read -p "Press enter to continue"
 	@terraform destroy -auto-approve \
-		-var-file="env_vars/$(value ENV).tfvars"
+		-var-file="environment/$(value ENV).tfvars"
 
 
 # Check that given variables are set and all have non-empty values,
